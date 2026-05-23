@@ -20,90 +20,23 @@ export interface ServiceArea {
   radiusMiles: number
 }
 
-// Singleton loader: the Google Maps script must load EXACTLY ONCE per page. When the
-// advertorial renders multiple AddressAutocomplete instances (sticky bar + embedded
-// survey), each used to inject its own <script>, so Google was loaded multiple times and
-// the Places API threw "included multiple times" and broke autocomplete everywhere. This
-// shared promise guarantees a single load; every instance awaits it and binds when ready.
-let googleMapsPromise: Promise<void> | null = null
-function loadGoogleMaps(): Promise<void> {
-  if (typeof window === "undefined") return Promise.resolve()
-  if (window.google?.maps?.places) return Promise.resolve()
-  if (googleMapsPromise) return googleMapsPromise
-  googleMapsPromise = new Promise<void>((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>("script[data-google-maps]")
-    if (existing) {
-      existing.addEventListener("load", () => resolve())
-      existing.addEventListener("error", () => reject(new Error("Google Maps failed to load")))
-      if (window.google?.maps?.places) resolve()
-      return
-    }
-    const script = document.createElement("script")
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY}&libraries=places`
-    script.async = true
-    script.defer = true
-    script.setAttribute("data-google-maps", "true")
-    script.onload = () => resolve()
-    script.onerror = () => reject(new Error("Google Maps failed to load"))
-    document.head.appendChild(script)
-  })
-  return googleMapsPromise
-}
+// Allowed states for the geofence (default: WI). Used as a client-side backstop;
+// the server proxy (/api/places-autocomplete) already filters predictions to
+// these states before they reach the dropdown.
+const ALLOWED_STATES_RAW = (process.env.NEXT_PUBLIC_ALLOWED_STATES ?? "WI")
+  .split(",").map((s) => s.trim().toUpperCase()).filter(Boolean)
 
-// Allowed states for autocomplete filtering (default: WI only).
-// This comes from NEXT_PUBLIC_ALLOWED_STATES env or falls back to "WI".
-// We hard-filter predictions so only addresses from allowed states appear in the dropdown.
-// Biasing alone lets neighboring states leak in, so we use AutocompleteService + custom
-// dropdown and drop any prediction whose state term is not in the allowed list.
-const ALLOWED_STATES_RAW = (
-  process.env.NEXT_PUBLIC_ALLOWED_STATES ?? "WI"
-)
-  .split(",")
-  .map((s) => s.trim().toUpperCase())
-  .filter(Boolean)
-
-function stateFromPrediction(prediction: google.maps.places.AutocompletePrediction): string | null {
-  // The browser JS SDK is inconsistent: sometimes terms end in "USA"
-  // ([street, city, ST, "USA"]) and sometimes the country term is omitted
-  // ([street, city, ST]). Position-based parsing breaks in the second case and
-  // filters every US address out, so derive the state robustly from multiple
-  // sources instead.
-
-  // 1) Any standalone 2-letter term is the state abbreviation (e.g. "WI").
-  for (const t of prediction.terms || []) {
-    const v = (t.value || "").trim().toUpperCase()
-    if (/^[A-Z]{2}$/.test(v) && v !== "US") return v
-  }
-  // 2) Parse the trailing state from the full description ("..., City, ST, USA"
-  //    or "..., City, ST"). structured_formatting.secondary_text works too.
-  const texts = [
-    prediction.description || "",
-    prediction.structured_formatting?.secondary_text || "",
-  ]
-  for (const text of texts) {
-    const m = text.toUpperCase().match(/,\s*([A-Z]{2})(?:,\s*USA)?\s*$/)
-    if (m) return m[1]
-  }
-  return null
-}
-
-function haversineDistanceMiles(
-  lat1: number, lon1: number, lat2: number, lon2: number
-): number {
+function haversineDistanceMiles(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 3958.8
   const dLat = (lat2 - lat1) * Math.PI / 180
   const dLon = (lon2 - lon1) * Math.PI / 180
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 }
 
 function isInServiceArea(lat: number, lng: number, areas: ServiceArea[]): boolean {
   if (!areas || areas.length === 0) return true
-  return areas.some(
-    (area) => haversineDistanceMiles(lat, lng, area.centerLat, area.centerLng) <= area.radiusMiles
-  )
+  return areas.some((area) => haversineDistanceMiles(lat, lng, area.centerLat, area.centerLng) <= area.radiusMiles)
 }
 
 interface AddressAutocompleteProps {
@@ -115,13 +48,6 @@ interface AddressAutocompleteProps {
   placeholder?: string
   className?: string
   allowedStates?: string[]
-}
-
-declare global {
-  interface Window {
-    google: typeof google
-    initGooglePlaces: () => void
-  }
 }
 
 interface Suggestion {
@@ -139,83 +65,42 @@ export function AddressAutocomplete({
   className = "",
   allowedStates = ALLOWED_STATES_RAW,
 }: AddressAutocompleteProps) {
-  const inputRef = useRef<HTMLInputElement>(null)
-  const [isLoaded, setIsLoaded] = useState(false)
   const [suggestions, setSuggestions] = useState<Suggestion[]>([])
   const [showDropdown, setShowDropdown] = useState(false)
-  const autocompleteServiceRef = useRef<google.maps.places.AutocompleteService | null>(null)
-  const placesServiceRef = useRef<google.maps.places.PlacesService | null>(null)
-  const sessionTokenRef = useRef<google.maps.places.AutocompleteSessionToken | null>(null)
+  const [loading, setLoading] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
+  // Close dropdown on outside click
   useEffect(() => {
-    let cancelled = false
-    loadGoogleMaps()
-      .then(() => {
-        if (cancelled) return
-        setIsLoaded(true)
-        // Initialize services
-        autocompleteServiceRef.current = new window.google.maps.places.AutocompleteService()
-        // PlacesService needs a DOM element
-        const dummy = document.createElement("div")
-        placesServiceRef.current = new window.google.maps.places.PlacesService(dummy)
-        sessionTokenRef.current = new window.google.maps.places.AutocompleteSessionToken()
-      })
-      .catch(() => {
-        // Key/network failure - input still works as plain text
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
+    const handle = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setShowDropdown(false)
-        setSuggestions([])
       }
     }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
+    document.addEventListener("mousedown", handle)
+    return () => document.removeEventListener("mousedown", handle)
   }, [])
 
-  const fetchSuggestions = (input: string) => {
-    if (!autocompleteServiceRef.current || input.length < 3) {
+  const fetchSuggestions = async (input: string) => {
+    if (input.trim().length < 3) {
       setSuggestions([])
       setShowDropdown(false)
       return
     }
-
-    autocompleteServiceRef.current.getPlacePredictions(
-      {
-        input,
-        componentRestrictions: { country: "us" },
-        types: ["address"],
-        sessionToken: sessionTokenRef.current ?? undefined,
-      },
-      (predictions, status) => {
-        if (status !== window.google.maps.places.PlacesServiceStatus.OK || !predictions) {
-          setSuggestions([])
-          setShowDropdown(false)
-          return
-        }
-
-        // Hard-filter: only keep predictions from allowed states
-        const filtered = predictions.filter((p) => {
-          const state = stateFromPrediction(p)
-          return state && allowedStates.includes(state)
-        })
-
-        setSuggestions(
-          filtered.map((p) => ({ description: p.description, placeId: p.place_id }))
-        )
-        setShowDropdown(filtered.length > 0)
-      }
-    )
+    try {
+      setLoading(true)
+      const res = await fetch(`/api/places-autocomplete?input=${encodeURIComponent(input)}`)
+      const data = await res.json()
+      const preds: Suggestion[] = data.predictions || []
+      setSuggestions(preds)
+      setShowDropdown(preds.length > 0)
+    } catch {
+      setSuggestions([])
+      setShowDropdown(false)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleInputChange = (newValue: string) => {
@@ -224,78 +109,44 @@ export function AddressAutocomplete({
     debounceRef.current = setTimeout(() => fetchSuggestions(newValue), 220)
   }
 
-  const handleSuggestionSelect = (suggestion: Suggestion) => {
-    setSuggestions([])
+  const handleSelect = async (s: Suggestion) => {
     setShowDropdown(false)
-    onChange(suggestion.description)
-
-    if (!placesServiceRef.current) return
-
-    // Refresh session token after selection
-    const usedToken = sessionTokenRef.current
-    sessionTokenRef.current = new window.google.maps.places.AutocompleteSessionToken()
-
-    placesServiceRef.current.getDetails(
-      {
-        placeId: suggestion.placeId,
-        fields: ["formatted_address", "address_components", "geometry"],
-        sessionToken: usedToken ?? undefined,
-      },
-      (place, status) => {
-        if (
-          status !== window.google.maps.places.PlacesServiceStatus.OK ||
-          !place?.formatted_address
-        )
-          return
-
-        let state = ""
-        let city = ""
-        let county = ""
-        let lat: number | undefined
-        let lng: number | undefined
-
-        place.address_components?.forEach((component) => {
-          if (component.types.includes("administrative_area_level_1"))
-            state = component.short_name
-          if (component.types.includes("locality")) city = component.long_name
-          if (component.types.includes("administrative_area_level_2"))
-            county = component.long_name
-        })
-
-        if (place.geometry?.location) {
-          lat = place.geometry.location.lat()
-          lng = place.geometry.location.lng()
-        }
-
-        // Backstop: gate selection by allowed state (in case the prediction slipped through)
-        if (allowedStates.length > 0 && state && !allowedStates.includes(state.toUpperCase())) {
-          onChange(place.formatted_address)
-          onOutOfArea?.(place.formatted_address)
-          return
-        }
-
-        const details: AddressDetails = {
-          formattedAddress: place.formatted_address,
-          lat,
-          lng,
-          state,
-          city,
-          county,
-        }
-
-        // Service-area radius check (for clients with specific service areas)
-        if (serviceAreas.length > 0 && lat !== undefined && lng !== undefined) {
-          if (!isInServiceArea(lat, lng, serviceAreas)) {
-            onChange(place.formatted_address)
-            onOutOfArea?.(place.formatted_address)
-            return
-          }
-        }
-
-        onChange(place.formatted_address)
-        onSelect(place.formatted_address, details)
+    setSuggestions([])
+    onChange(s.description)
+    try {
+      const res = await fetch(`/api/places-details?place_id=${encodeURIComponent(s.placeId)}`)
+      const d = await res.json()
+      if (!d?.formattedAddress) {
+        // Fall back to the description text if details lookup fails.
+        onSelect(s.description, { formattedAddress: s.description })
+        return
       }
-    )
+      const details: AddressDetails = {
+        formattedAddress: d.formattedAddress,
+        state: d.state,
+        city: d.city,
+        county: d.county,
+        lat: d.lat,
+        lng: d.lng,
+      }
+      onChange(d.formattedAddress)
+
+      // State geofence backstop (server already filtered, this catches edge cases).
+      if (allowedStates.length > 0 && d.state && !allowedStates.includes(String(d.state).toUpperCase())) {
+        onOutOfArea?.(d.formattedAddress)
+        return
+      }
+      // Optional radius check for clients using lat/lng service areas.
+      if (serviceAreas.length > 0 && typeof d.lat === "number" && typeof d.lng === "number") {
+        if (!isInServiceArea(d.lat, d.lng, serviceAreas)) {
+          onOutOfArea?.(d.formattedAddress)
+          return
+        }
+      }
+      onSelect(d.formattedAddress, details)
+    } catch {
+      onSelect(s.description, { formattedAddress: s.description })
+    }
   }
 
   return (
@@ -304,18 +155,15 @@ export function AddressAutocomplete({
         <MapPin className="h-5 w-5 text-gray-400" />
       </div>
       <Input
-        ref={inputRef}
         type="text"
         placeholder={placeholder}
         value={value}
-        onChange={(e) => handleInputChange(e.target.value)}
-        onFocus={() => {
-          if (suggestions.length > 0) setShowDropdown(true)
-        }}
         autoComplete="off"
+        onChange={(e) => handleInputChange(e.target.value)}
+        onFocus={() => { if (suggestions.length > 0) setShowDropdown(true) }}
         className="h-12 pl-10 rounded-xl border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[var(--accent)] focus:ring-[var(--accent)]/20"
       />
-      {!isLoaded && (
+      {loading && (
         <div className="absolute right-3 top-1/2 -translate-y-1/2">
           <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-200 border-t-[var(--accent)]" />
         </div>
@@ -325,11 +173,8 @@ export function AddressAutocomplete({
           {suggestions.map((s, i) => (
             <li
               key={s.placeId || i}
-              onMouseDown={(e) => {
-                e.preventDefault()
-                handleSuggestionSelect(s)
-              }}
-              className="flex cursor-pointer items-center gap-2 px-4 py-3 text-sm text-gray-800 hover:bg-gray-50 border-b border-gray-100 last:border-0"
+              onMouseDown={(e) => { e.preventDefault(); handleSelect(s) }}
+              className="flex cursor-pointer items-center gap-2 border-b border-gray-100 px-4 py-3 text-sm text-gray-800 last:border-0 hover:bg-gray-50"
             >
               <MapPin className="h-4 w-4 shrink-0 text-gray-400" />
               {s.description}
