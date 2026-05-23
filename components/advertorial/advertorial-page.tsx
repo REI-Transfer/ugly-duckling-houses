@@ -250,18 +250,21 @@ export function AdvertorialPage({
         </div>
 
         <H2>What Wisconsin Homeowners Are Saying</H2>
-        <section className="grid grid-cols-1 sm:grid-cols-2 gap-5 my-[30px] mb-10">
+        <div className="text-center mb-6">
+          <div style={{ color: "#f5a623" }} className="text-[24px] tracking-[3px]">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p style={{ color: C.muted }} className="text-[14px] mt-1">Rated <strong>5.0</strong> across <strong>20</strong> Google reviews</p>
+        </div>
+        <section className="grid grid-cols-1 sm:grid-cols-2 gap-5 my-[24px] mb-10">
           {[
-            { img: "/images/adv-testimonial-1.jpg", quote: "After my husband passed, the house was just too much for one person. The list of repairs alone would have been thousands. They bought it exactly as it was. I picked my closing date, and I did not have to fix a single thing. A weight off my shoulders I cannot describe.", cite: "Patricia M., 71, Wisconsin" },
-            { img: "/images/adv-testimonial-2.jpg", quote: "We were moving to be closer to our grandkids and did not want months of showings at our age. They gave us a written offer in a couple of days and let us close on our schedule. Honest people. No games.", cite: "Robert and Jean D., 68 and 66, Wisconsin" },
-            { img: "/images/adv-testimonial-3.jpg", quote: "I inherited my father's home and live four hours away. Flying back for showings and repairs was never going to work for my life. They handled everything from start to finish. I barely had to travel for it at all.", cite: "Daniel K., 59, Wisconsin" },
-            { img: "/images/adv-testimonial-4.jpg", quote: "The agent I talked to wanted me to spend money I do not have fixing the place up first. I am on a fixed income. That was never happening. Selling for cash as-is made every bit of sense. I kept more in my pocket and slept well that night.", cite: "Carol S., 74, Wisconsin" },
+            { quote: "Nick and Jen were an absolute godsend. Wonderful communication, upfront and honest through the end, easy to work with, and flexible. So much simpler and less headache than a realtor. This was truly a win win transaction.", cite: "Angela Z." },
+            { quote: "I contacted Ugly Duckling on a Saturday evening and Nick responded almost immediately. They were very transparent and honest about our home and its worth, and we closed with ease. I highly recommend this team. Super professional.", cite: "Tiffany E." },
+            { quote: "My late brother left behind two properties, and both needed work. In an estate situation you are not in a position to spend money making a property salable. They evaluated it, were upfront about their numbers, and offered a fair price with full disclosure. As a bonus, they do not require the property be empty.", cite: "Chip L." },
+            { quote: "We called Ugly Duckling because we wanted to sell fast and were unsure we could. They came to our house the same day I called, gave honest feedback and advice, and followed up frequently. It was obvious they care about what they do and about doing right by people.", cite: "Noelle H." },
           ].map((t) => (
             <figure key={t.cite} style={{ border: `1px solid ${C.rule}` }} className="m-0 text-[15px] leading-[1.55] rounded-lg p-[18px]">
-              <Image src={t.img} alt={t.cite} width={300} height={300} className="w-full h-auto aspect-square object-cover rounded-md mb-3 block bg-gray-100" />
               <div style={{ color: "#f5a623" }} className="tracking-[1px] mb-2">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
               <p className="mb-2.5">{t.quote}</p>
-              <cite style={{ color: C.muted }} className="not-italic text-[13px]">{t.cite}</cite>
+              <cite style={{ color: C.muted }} className="not-italic text-[13px] font-semibold">{t.cite} &middot; Verified Google review</cite>
             </figure>
           ))}
         </section>
