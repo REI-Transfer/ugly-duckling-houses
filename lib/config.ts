@@ -8,7 +8,6 @@ const config = {
   companyName:     process.env.COMPANY_NAME     ?? "Your Home Buyers",
   marketName:      process.env.MARKET_NAME      ?? "",
   smsKeyword:      process.env.SMS_KEYWORD      ?? "OFFER",
-  allowedStates:   (process.env.ALLOWED_STATES ?? "WI").split(",").map((s: string) => s.trim().toUpperCase()).filter(Boolean),
   phoneDisplay:    process.env.PHONE_DISPLAY     ?? "(800) 000-0000",
   phoneHref:       process.env.PHONE_HREF        ?? "8000000000",
   accentColor:     process.env.ACCENT_COLOR      ?? "#2563eb",
