@@ -63,13 +63,28 @@ const ALLOWED_STATES_RAW = (
   .filter(Boolean)
 
 function stateFromPrediction(prediction: google.maps.places.AutocompletePrediction): string | null {
-  const stateComponent = prediction.terms.find((t, idx) => {
-    // Terms: [street, city, state_abbr, "USA"]. State abbr is usually 2nd from last before "USA".
-    const isUS = prediction.terms[prediction.terms.length - 1]?.value === "USA"
-    if (isUS && idx === prediction.terms.length - 2) return true
-    return false
-  })
-  return stateComponent?.value?.toUpperCase() ?? null
+  // The browser JS SDK is inconsistent: sometimes terms end in "USA"
+  // ([street, city, ST, "USA"]) and sometimes the country term is omitted
+  // ([street, city, ST]). Position-based parsing breaks in the second case and
+  // filters every US address out, so derive the state robustly from multiple
+  // sources instead.
+
+  // 1) Any standalone 2-letter term is the state abbreviation (e.g. "WI").
+  for (const t of prediction.terms || []) {
+    const v = (t.value || "").trim().toUpperCase()
+    if (/^[A-Z]{2}$/.test(v) && v !== "US") return v
+  }
+  // 2) Parse the trailing state from the full description ("..., City, ST, USA"
+  //    or "..., City, ST"). structured_formatting.secondary_text works too.
+  const texts = [
+    prediction.description || "",
+    prediction.structured_formatting?.secondary_text || "",
+  ]
+  for (const text of texts) {
+    const m = text.toUpperCase().match(/,\s*([A-Z]{2})(?:,\s*USA)?\s*$/)
+    if (m) return m[1]
+  }
+  return null
 }
 
 function haversineDistanceMiles(
