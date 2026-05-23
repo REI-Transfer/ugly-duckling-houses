@@ -15,6 +15,7 @@ interface SurveyData {
   timeline: string
   condition: string
   reason: string
+  ownershipLength: string
   name: string
   email: string
   phone: string
@@ -66,6 +67,13 @@ const REASON_OPTIONS = [
   { id: "downsizing", label: "Downsizing" },
   { id: "repairs", label: "Can't afford repairs" },
   { id: "other", label: "Other" },
+]
+
+const OWNERSHIP_LENGTH_OPTIONS = [
+  { id: "less-than-3", label: "Less than 3 years" },
+  { id: "3-to-5", label: "3 to 5 years" },
+  { id: "5-to-10", label: "5 to 10 years" },
+  { id: "10-plus", label: "10+ years" },
 ]
 
 // ─── Lead scoring (browser-side) ───────────────────────────────────────
@@ -204,6 +212,7 @@ export function SurveyCard({ phoneDisplay = "(800) 000-0000", phoneHref = "80000
     timeline: "",
     condition: "",
     reason: "",
+    ownershipLength: "",
     name: "",
     email: "",
     phone: "",
@@ -222,7 +231,7 @@ export function SurveyCard({ phoneDisplay = "(800) 000-0000", phoneHref = "80000
   }, [])
   const [honeypot, setHoneypot] = useState("")
 
-  const totalSteps = 8
+  const totalSteps = 9
 
   const handleNext = async () => {
     // Block out-of-area addresses on Continue with a disqualify screen
@@ -231,7 +240,7 @@ export function SurveyCard({ phoneDisplay = "(800) 000-0000", phoneHref = "80000
       setIsDisqualified(true)
       return
     }
-    if (step === 8) {
+    if (step === totalSteps) {
       const errors: {[key: string]: string} = {}
 
       const nameCheck = validateName(surveyData.name)
@@ -280,6 +289,7 @@ export function SurveyCard({ phoneDisplay = "(800) 000-0000", phoneHref = "80000
           condition: surveyData.condition,
           timeline: surveyData.timeline,
           reason: surveyData.reason,
+          ownershipLength: surveyData.ownershipLength,
           source: 'Survey Form',
           submittedAt: new Date().toISOString(),
           qualified,
@@ -337,7 +347,8 @@ export function SurveyCard({ phoneDisplay = "(800) 000-0000", phoneHref = "80000
       case 5: return surveyData.timeline !== ""
       case 6: return surveyData.condition !== ""
       case 7: return surveyData.reason !== ""
-      case 8: return (
+      case 8: return surveyData.ownershipLength !== ""
+      case 9: return (
         surveyData.name.trim().length > 0 &&
         surveyData.email.trim().length > 0 &&
         surveyData.phone.trim().length > 0
@@ -568,6 +579,18 @@ export function SurveyCard({ phoneDisplay = "(800) 000-0000", phoneHref = "80000
         {step === 8 && (
           <div className="flex flex-col gap-4">
             <div>
+              <h2 className="text-2xl font-semibold text-gray-900">How long have you owned the home?</h2>
+              <p className="mt-1 text-sm text-gray-500">This helps us tailor your offer.</p>
+            </div>
+            <div className="flex flex-col gap-2">
+              {OWNERSHIP_LENGTH_OPTIONS.map((option) => renderOptionButton(option, surveyData.ownershipLength, "ownershipLength"))}
+            </div>
+          </div>
+        )}
+
+        {step === 9 && (
+          <div className="flex flex-col gap-4">
+            <div>
               <h2 className="text-2xl font-semibold text-gray-900">How can we reach you?</h2>
               <p className="mt-1 text-sm text-gray-500">We'll use this to send you your cash offer.</p>
             </div>
@@ -600,7 +623,7 @@ export function SurveyCard({ phoneDisplay = "(800) 000-0000", phoneHref = "80000
               <div>
                 <Input
                   type="tel"
-                  placeholder="(301) 555-0000"
+                  placeholder="(555) 123-4567"
                   value={surveyData.phone}
                   onChange={(e) => {
                     setSurveyData({ ...surveyData, phone: formatPhoneNumber(e.target.value) })
