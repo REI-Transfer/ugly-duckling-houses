@@ -328,7 +328,6 @@ export function AdvertorialPage({
               value={stickyAddr}
               onChange={setStickyAddr}
               onSelect={handleStickySelect}
-              serviceAreas={serviceAreas}
               placeholder="Your property address"
             />
           </div>
