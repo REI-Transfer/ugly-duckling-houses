@@ -1,11 +1,14 @@
 /**
- * lib/config.ts — Single server-side env var read point.
+ * lib/config.ts: Single server-side env var read point.
  * Import this ONLY in server components (layout.tsx, page.tsx, API routes).
- * Never import in "use client" components — pass values as props instead.
+ * Never import in "use client" components. Pass values as props instead.
  */
 const config = {
   // Brand
   companyName:     process.env.COMPANY_NAME     ?? "Your Home Buyers",
+  marketName:      process.env.MARKET_NAME      ?? "",
+  smsKeyword:      process.env.SMS_KEYWORD      ?? "OFFER",
+  allowedStates:   (process.env.ALLOWED_STATES ?? "WI").split(",").map((s: string) => s.trim().toUpperCase()).filter(Boolean),
   phoneDisplay:    process.env.PHONE_DISPLAY     ?? "(800) 000-0000",
   phoneHref:       process.env.PHONE_HREF        ?? "8000000000",
   accentColor:     process.env.ACCENT_COLOR      ?? "#2563eb",
@@ -21,7 +24,7 @@ const config = {
   headlineAccent:  process.env.HEADLINE_ACCENT   ?? "",
   subheadline:     process.env.SUBHEADLINE       ?? "No fees. No repairs. Cash offer in 24 hours.",
 
-  // Service areas — JSON array of {id, centerLat, centerLng, radiusMiles}
+  // Service areas: JSON array of {id, centerLat, centerLng, radiusMiles}
   serviceAreas:    process.env.SERVICE_AREAS     ?? "[]",
 
   // Trust indicators
@@ -40,10 +43,10 @@ const config = {
   privacyPolicyUrl: process.env.PRIVACY_POLICY_URL ?? "/privacy",
   termsUrl:         process.env.TERMS_URL           ?? "/terms",
 
-  // Survey disqualification — comma-separated property type IDs to hard-disqualify
+  // Survey disqualification: comma-separated property type IDs to hard-disqualify
   disqualifiedPropertyTypes: process.env.DISQUALIFIED_PROPERTY_TYPES ?? "mobile-home,land,other",
 
-  // Webhook (server-side only — never exposed to browser)
+  // Webhook (server-side only, never exposed to browser)
   webhookUrl:      process.env.WEBHOOK_URL ?? "",
 } as const
 

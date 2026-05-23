@@ -186,12 +186,18 @@ interface SurveyCardProps {
   phoneHref?: string
   serviceAreas?: ServiceArea[]
   disqualifiedPropertyTypes?: string[]
+  // Additive seed props for the advertorial sticky-bar -> popup flow.
+  // When an address is captured in the sticky bar, we open the modal pre-seeded
+  // at step 2 so the user does not have to re-enter the address they already gave.
+  // These props do NOT change the form's submit, webhook, or redirect behavior.
+  initialAddress?: string
+  initialStep?: number
 }
 
-export function SurveyCard({ phoneDisplay = "(800) 000-0000", phoneHref = "8000000000", serviceAreas = [], disqualifiedPropertyTypes = ["mobile-home", "land", "other"] }: SurveyCardProps) {
-  const [step, setStep] = useState(1)
+export function SurveyCard({ phoneDisplay = "(800) 000-0000", phoneHref = "8000000000", serviceAreas = [], disqualifiedPropertyTypes = ["mobile-home", "land", "other"], initialAddress, initialStep }: SurveyCardProps) {
+  const [step, setStep] = useState(initialStep && initialStep >= 2 && initialStep <= 8 ? initialStep : 1)
   const [surveyData, setSurveyData] = useState<SurveyData>({
-    address: "",
+    address: initialAddress ?? "",
     propertyType: "",
     isLegalOwner: "",
     listedOnMarket: "",
