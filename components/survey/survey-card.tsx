@@ -16,6 +16,8 @@ interface SurveyData {
   condition: string
   reason: string
   ownershipLength: string
+  firstName: string
+  lastName: string
   name: string
   email: string
   phone: string
@@ -213,6 +215,8 @@ export function SurveyCard({ phoneDisplay = "(800) 000-0000", phoneHref = "80000
     condition: "",
     reason: "",
     ownershipLength: "",
+    firstName: "",
+    lastName: "",
     name: "",
     email: "",
     phone: "",
@@ -243,8 +247,10 @@ export function SurveyCard({ phoneDisplay = "(800) 000-0000", phoneHref = "80000
     if (step === totalSteps) {
       const errors: {[key: string]: string} = {}
 
-      const nameCheck = validateName(surveyData.name)
-      if (!nameCheck.valid) errors.name = nameCheck.msg
+      const firstCheck = validateName(surveyData.firstName)
+      if (!firstCheck.valid) errors.firstName = firstCheck.msg
+      const lastCheck = validateName(surveyData.lastName)
+      if (!lastCheck.valid) errors.lastName = lastCheck.msg
 
       const emailCheck = validateEmail(surveyData.email)
       if (!emailCheck.valid) errors.email = emailCheck.msg
@@ -271,16 +277,16 @@ export function SurveyCard({ phoneDisplay = "(800) 000-0000", phoneHref = "80000
       setIsSubmitting(true)
 
       try {
-        const nameParts = surveyData.name.trim().split(/\s+/)
+        const fullName = `${surveyData.firstName.trim()} ${surveyData.lastName.trim()}`.trim()
         const score = calculateLeadScore(surveyData)
         const quality = leadQuality(score)
         const qualified = isQualifiedForMeta(surveyData)
         const dqReason = qualified ? null : disqualifyReasonFor(surveyData)
         const eventId = `lead-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`
         const payload = {
-          firstName: nameParts[0] || '',
-          lastName: nameParts.slice(1).join(' ') || '',
-          name: surveyData.name,
+          firstName: surveyData.firstName.trim(),
+          lastName: surveyData.lastName.trim(),
+          name: fullName,
           email: surveyData.email,
           phone: surveyData.phone,
           address: surveyData.address,
@@ -349,7 +355,8 @@ export function SurveyCard({ phoneDisplay = "(800) 000-0000", phoneHref = "80000
       case 7: return surveyData.reason !== ""
       case 8: return surveyData.ownershipLength !== ""
       case 9: return (
-        surveyData.name.trim().length > 0 &&
+        surveyData.firstName.trim().length > 0 &&
+        surveyData.lastName.trim().length > 0 &&
         surveyData.email.trim().length > 0 &&
         surveyData.phone.trim().length > 0
       )
@@ -456,7 +463,7 @@ export function SurveyCard({ phoneDisplay = "(800) 000-0000", phoneHref = "80000
             <Check className="h-7 w-7 text-[#22c55e]" />
           </div>
           <div>
-            <h2 className="text-2xl font-semibold text-gray-900">Thank You, {surveyData.name}!</h2>
+            <h2 className="text-2xl font-semibold text-gray-900">Thank You, {surveyData.firstName}!</h2>
             <p className="mt-2 text-gray-600">We've received your information and will be in touch shortly.</p>
             <p className="mt-4 text-sm text-gray-500">One of our team members will call you within 24 hours.</p>
           </div>
@@ -595,17 +602,31 @@ export function SurveyCard({ phoneDisplay = "(800) 000-0000", phoneHref = "80000
               <p className="mt-1 text-sm text-gray-500">We'll use this to send you your cash offer.</p>
             </div>
             <div className="flex flex-col gap-3">
-              <div>
-                <Input
-                  placeholder="Your full name"
-                  value={surveyData.name}
-                  onChange={(e) => {
-                    setSurveyData({ ...surveyData, name: e.target.value })
-                    setValidationErrors({ ...validationErrors, name: "" })
-                  }}
-                  className={`h-12 rounded-xl border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[var(--accent)] focus:ring-[var(--accent)]/20 ${validationErrors.name ? "border-red-500" : ""}`}
-                />
-                {validationErrors.name && <p className="mt-1 text-xs text-red-500">{validationErrors.name}</p>}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Input
+                    placeholder="First name"
+                    value={surveyData.firstName}
+                    onChange={(e) => {
+                      setSurveyData({ ...surveyData, firstName: e.target.value })
+                      setValidationErrors({ ...validationErrors, firstName: "" })
+                    }}
+                    className={`h-12 rounded-xl border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[var(--accent)] focus:ring-[var(--accent)]/20 ${validationErrors.firstName ? "border-red-500" : ""}`}
+                  />
+                  {validationErrors.firstName && <p className="mt-1 text-xs text-red-500">{validationErrors.firstName}</p>}
+                </div>
+                <div>
+                  <Input
+                    placeholder="Last name"
+                    value={surveyData.lastName}
+                    onChange={(e) => {
+                      setSurveyData({ ...surveyData, lastName: e.target.value })
+                      setValidationErrors({ ...validationErrors, lastName: "" })
+                    }}
+                    className={`h-12 rounded-xl border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[var(--accent)] focus:ring-[var(--accent)]/20 ${validationErrors.lastName ? "border-red-500" : ""}`}
+                  />
+                  {validationErrors.lastName && <p className="mt-1 text-xs text-red-500">{validationErrors.lastName}</p>}
+                </div>
               </div>
               <div>
                 <Input
