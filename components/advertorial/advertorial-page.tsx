@@ -256,12 +256,13 @@ export function AdvertorialPage({
         </div>
         <section className="grid grid-cols-1 sm:grid-cols-2 gap-5 my-[24px] mb-10">
           {[
-            { quote: "Nick and Jen were an absolute godsend. Wonderful communication, upfront and honest through the end, easy to work with, and flexible. So much simpler and less headache than a realtor. This was truly a win win transaction.", cite: "Angela Z." },
-            { quote: "I contacted Ugly Duckling on a Saturday evening and Nick responded almost immediately. They were very transparent and honest about our home and its worth, and we closed with ease. I highly recommend this team. Super professional.", cite: "Tiffany E." },
-            { quote: "My late brother left behind two properties, and both needed work. In an estate situation you are not in a position to spend money making a property salable. They evaluated it, were upfront about their numbers, and offered a fair price with full disclosure. As a bonus, they do not require the property be empty.", cite: "Chip L." },
-            { quote: "We called Ugly Duckling because we wanted to sell fast and were unsure we could. They came to our house the same day I called, gave honest feedback and advice, and followed up frequently. It was obvious they care about what they do and about doing right by people.", cite: "Noelle H." },
+            { img: "/images/adv-testimonial-1.jpg", quote: "Nick and Jen were an absolute godsend. Wonderful communication, upfront and honest through the end, easy to work with, and flexible. So much simpler and less headache than a realtor. This was truly a win win transaction.", cite: "Angela Z." },
+            { img: "/images/adv-testimonial-2.jpg", quote: "I contacted Ugly Duckling on a Saturday evening and Nick responded almost immediately. They were very transparent and honest about our home and its worth, and we closed with ease. I highly recommend this team. Super professional.", cite: "Tiffany E." },
+            { img: "/images/adv-testimonial-3.jpg", quote: "My late brother left behind two properties, and both needed work. In an estate situation you are not in a position to spend money making a property salable. They evaluated it, were upfront about their numbers, and offered a fair price with full disclosure. As a bonus, they do not require the property be empty.", cite: "Chip L." },
+            { img: "/images/adv-testimonial-4.jpg", quote: "We called Ugly Duckling because we wanted to sell fast and were unsure we could. They came to our house the same day I called, gave honest feedback and advice, and followed up frequently. It was obvious they care about what they do and about doing right by people.", cite: "Noelle H." },
           ].map((t) => (
             <figure key={t.cite} style={{ border: `1px solid ${C.rule}` }} className="m-0 text-[15px] leading-[1.55] rounded-lg p-[18px]">
+              <Image src={t.img} alt={t.cite} width={300} height={300} className="w-full h-auto aspect-square object-cover rounded-md mb-3 block bg-gray-100" />
               <div style={{ color: "#f5a623" }} className="tracking-[1px] mb-2">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
               <p className="mb-2.5">{t.quote}</p>
               <cite style={{ color: C.muted }} className="not-italic text-[13px] font-semibold">{t.cite} &middot; Verified Google review</cite>
