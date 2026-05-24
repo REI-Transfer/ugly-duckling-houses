@@ -6,9 +6,9 @@ import config from "@/lib/config"
 const market = config.marketName || "Wisconsin"
 
 export const metadata: Metadata = {
-  title: `Why More ${market} Homeowners Are Selling Their Homes For Cash | ${config.companyName}`,
+  title: `${market} Homeowners 45+: A Higher Cash Offer On Older Homes | ${config.companyName}`,
   description:
-    "A simpler way Wisconsin homeowners are selling as-is. No repairs out of pocket, no open houses, no agent fees taken out of the price. See if your home qualifies.",
+    `See your 24-hour cash offer estimate without listing, repairs, or showings. A simpler way ${market} homeowners turn home equity into cash, as-is. No agent fees taken out of the price.`,
 }
 
 export default function AdvertorialRoute() {
@@ -25,6 +25,7 @@ export default function AdvertorialRoute() {
         phoneHref={config.phoneHref}
         marketName={config.marketName}
         accentColor={config.accentColor}
+        ownerName={config.ownerName}
         writerName="Margaret Ellison"
         writerRole="Housing Correspondent"
         writerHeadshot="/images/adv-local-team.jpg"
