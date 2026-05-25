@@ -266,7 +266,7 @@ export function AdvertorialPage({
         <H2>Introducing {companyName}</H2>
         <FullImage src="/images/adv-local-team.jpg" alt={`Local ${companyName} team`} />
         <section>
-          <p className="mb-[18px]"><strong>{companyName} is a local outfit{ownerName && ownerName !== "Our Team" ? `, led by ${ownerName},` : ""} that buys homes straight from homeowners across {where}, with cash, in whatever shape they sit.</strong></p>
+          <p className="mb-[18px]"><strong>{companyName} is a local home-buying company{ownerName && ownerName !== "Our Team" ? `, led by ${ownerName},` : ""} that buys homes straight from homeowners across {where}, with cash, in whatever shape they sit.</strong></p>
           <p className="mb-[18px]">That means no repairs, no emptying out the whole house, no listing, no showings, and no commission skimmed off your number. You tell us about the place, we take a look, and we put a fair written cash offer in your hands.</p>
           <p className="mb-[18px]">Like the offer? You name the closing date. Want it wrapped up in two weeks? Done. Need 60 days to line up your next place and pack at an easy pace? That works just the same.</p>
           <p className="mb-[18px]">If the offer is not the right fit, there is no arm-twisting and nothing owed. The written offer is yours to keep and chew on for as long as you please.</p>
