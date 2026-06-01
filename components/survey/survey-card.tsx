@@ -496,7 +496,7 @@ export function SurveyCard({ phoneDisplay = "(800) 000-0000", phoneHref = "80000
         {step === 1 && (
           <div className="flex flex-col gap-4">
             <div>
-              <h2 className="text-2xl font-semibold text-gray-900">What's your property address?</h2>
+              <h2 className="text-2xl font-semibold text-gray-900">Enter your address to get started</h2>
               <p className="mt-1 text-sm text-gray-500">Start typing and select your address from the dropdown.</p>
             </div>
             <AddressAutocomplete
