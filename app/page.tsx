@@ -72,28 +72,32 @@ export default function HomePage() {
             />
           </div>
 
-          {/* Owner / Founder section — shows when ownerName or headshotUrl is set */}
-          {(config.ownerName || config.headshotUrl) && (
-            <div className="mt-8 md:mt-12 mx-auto flex flex-col items-center gap-3">
-              {config.headshotUrl && (
-                <div className="relative h-16 w-16 overflow-hidden rounded-full border-2" style={{ borderColor: "rgba(255,255,255,0.5)" }}>
-                  <Image
-                    src={config.headshotUrl}
-                    alt={config.ownerName || config.companyName}
-                    fill
-                    unoptimized
-                    className="object-cover"
-                  />
-                </div>
-              )}
+          {/* Meet the team — local trust, sits directly below the form */}
+          <div className="mt-8 md:mt-12 mx-auto max-w-3xl">
+            <div className="rounded-3xl bg-white p-5 md:p-8 shadow-xl text-center">
+              <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: config.accentColor }}>
+                Meet the {config.companyName} Team
+              </p>
+              <h2 className="mt-1 text-xl font-bold text-gray-900 md:text-2xl text-balance">
+                Real local people helping {config.marketName || "Wisconsin"} homeowners for over a decade
+              </h2>
+              <div className="mt-4 overflow-hidden rounded-2xl">
+                <Image
+                  src="/images/team-photo.jpg"
+                  alt={`The ${config.companyName} team`}
+                  width={1024}
+                  height={784}
+                  sizes="(max-width: 768px) 100vw, 700px"
+                  className="h-auto w-full"
+                />
+              </div>
               {config.ownerName && (
-                <div className="text-center">
-                  <p className="text-base font-semibold text-white">{config.ownerName}</p>
-                  <p className="text-sm text-white/60">{config.companyName}</p>
-                </div>
+                <p className="mt-4 text-sm text-gray-500">
+                  Led by <span className="font-semibold text-gray-900">{config.ownerName}</span>, {config.companyName}
+                </p>
               )}
             </div>
-          )}
+          </div>
 
           {/* VSL (conditional on env vars) */}
           <div className="mt-6 md:mt-8 mx-auto max-w-4xl">

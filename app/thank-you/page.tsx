@@ -3,6 +3,7 @@ import Link from "next/link"
 import { CheckCircle2, Phone, MessageSquare } from "lucide-react"
 import config from "@/lib/config"
 import { ClickToPlayVideo } from "@/components/thankyou/click-to-play-video"
+import { VideoTestimonials } from "@/components/thankyou/video-testimonials"
 import { ContactCTA } from "@/components/article/contact-cta"
 import { ARTICLES } from "@/lib/articles"
 
@@ -169,6 +170,23 @@ function ThankYouV2() {
           </div>
         </section>
       )}
+
+      <section className="bg-white py-14 md:py-20 border-t border-gray-200">
+        <div className="mx-auto max-w-5xl px-4">
+          <div className="text-center mb-8">
+            <p className="uppercase tracking-widest text-xs font-semibold text-gray-500 mb-2">
+              Real {config.marketName || "Wisconsin"} Sellers
+            </p>
+            <h2 className="text-2xl md:text-4xl font-bold text-gray-900 text-balance">
+              Hear It From Homeowners Like You
+            </h2>
+            <p className="mx-auto mt-2 max-w-2xl text-sm md:text-base text-gray-600">
+              Real people who sold their {config.marketName || "Wisconsin"} home with {config.companyName}.
+            </p>
+          </div>
+          <VideoTestimonials accent={config.accentColor} />
+        </div>
+      </section>
 
       {founderParas.length > 0 && (
         <section className="bg-white border-t border-gray-200">
@@ -371,6 +389,22 @@ function ThankYouV1() {
               See all articles
             </Link>
           </div>
+        </div>
+
+        {/* Customer video testimonials — tabbed YouTube showcase */}
+        <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-6 md:p-8 mb-6">
+          <div className="text-center mb-6">
+            <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+              Real {config.marketName || "Wisconsin"} Sellers
+            </p>
+            <h3 className="mt-1 text-xl font-bold text-gray-900 md:text-2xl">
+              Hear It From Homeowners Like You
+            </h3>
+            <p className="mt-1 text-sm text-gray-500">
+              Real people who sold their {config.marketName || "Wisconsin"} home with {config.companyName}.
+            </p>
+          </div>
+          <VideoTestimonials accent={config.accentColor} />
         </div>
 
         {/* Text / call CTA */}
