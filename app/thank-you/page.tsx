@@ -280,6 +280,22 @@ function ThankYouV1() {
           </p>
         </div>
 
+        {/* Customer video testimonials — tabbed YouTube showcase (top placement) */}
+        <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-6 md:p-8 mb-6">
+          <div className="text-center mb-6">
+            <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+              Real {config.marketName || "Wisconsin"} Sellers
+            </p>
+            <h3 className="mt-1 text-xl font-bold text-gray-900 md:text-2xl">
+              Hear It From Homeowners Like You
+            </h3>
+            <p className="mt-1 text-sm text-gray-500">
+              Real people who sold their {config.marketName || "Wisconsin"} home with {config.companyName}.
+            </p>
+          </div>
+          <VideoTestimonials accent={config.accentColor} />
+        </div>
+
         {/* Video section */}
         {process.env.NEXT_PUBLIC_THANKYOU_VIDEO_URL && (
           <div className="mb-8">
@@ -389,22 +405,6 @@ function ThankYouV1() {
               See all articles
             </Link>
           </div>
-        </div>
-
-        {/* Customer video testimonials — tabbed YouTube showcase */}
-        <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-6 md:p-8 mb-6">
-          <div className="text-center mb-6">
-            <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
-              Real {config.marketName || "Wisconsin"} Sellers
-            </p>
-            <h3 className="mt-1 text-xl font-bold text-gray-900 md:text-2xl">
-              Hear It From Homeowners Like You
-            </h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Real people who sold their {config.marketName || "Wisconsin"} home with {config.companyName}.
-            </p>
-          </div>
-          <VideoTestimonials accent={config.accentColor} />
         </div>
 
         {/* Text / call CTA */}

@@ -3,16 +3,19 @@ import { SurveyCard } from "@/components/survey/survey-card"
 import { VSLSection } from "@/components/survey/vsl-section"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
-import { Shield, Clock, DollarSign } from "lucide-react"
 import config from "@/lib/config"
 
 export default function HomePage() {
-  // Hero trust badges: icon is hardcoded per badge, text stays env-driven (config.stat*Label)
-  const badges = [
-    { Icon: Shield, label: config.stat1Label },
-    { Icon: Clock, label: config.stat2Label },
-    { Icon: DollarSign, label: config.stat3Label },
+  // Hero trust badges — iBuyKC light-theme style: green check + value + label
+  const stats = [
+    { value: config.stat1Value, label: config.stat1Label },
+    { value: config.stat2Value, label: config.stat2Label },
+    { value: config.stat3Value, label: config.stat3Label },
   ]
+
+  // Headline matched to iBuyKC format, market swapped in from config
+  const heroHeadline = `${config.marketName || "Wisconsin"} Homeowners: Get a Fair Cash Offer in 24 Hours. No Repairs, No Fees.`
+  const heroSubhead = "We handle the paperwork, the timeline, and the stress. You pick the closing date and walk away with cash."
 
   // Parse service areas for client-side validation
   let parsedServiceAreas: Array<{ id: string; centerLat: number; centerLng: number; radiusMiles: number }> = []
@@ -21,41 +24,37 @@ export default function HomePage() {
   const disqualifiedPropertyTypes = config.disqualifiedPropertyTypes.split(",").map(s => s.trim()).filter(Boolean)
 
   return (
-    <main className="relative min-h-screen" style={{ backgroundColor: config.accentColor }}>
+    <main className="relative min-h-screen bg-gray-50">
       <div className="relative z-10">
         <Header
           companyName={config.companyName}
           phoneDisplay={config.phoneDisplay}
           phoneHref={config.phoneHref}
           logoUrl={config.logoUrl}
-          headerBgColor={config.headerBgColor}
+          headerBgColor="#ffffff"
         />
 
         <div className="mx-auto max-w-7xl px-4 py-4 md:py-6 lg:px-8">
-          {/* Hero */}
+          {/* Hero — iBuyKC light theme */}
           <div className="mx-auto text-center">
-            <h1 className="text-4xl font-extrabold leading-tight text-white md:text-5xl lg:text-[3.75rem] lg:leading-[1.15] text-balance">
-              {config.headline}
-              {config.headlineAccent && (
-                <span className="text-white/80"> {config.headlineAccent}</span>
-              )}
+            <h1 className="text-2xl font-bold leading-tight text-gray-900 md:text-4xl lg:text-[2.75rem] lg:leading-tight text-balance">
+              {heroHeadline}
             </h1>
-            <p className="mt-2 md:mt-3 text-base md:text-lg text-white/70">
-              {config.subheadline}
+            <p className="mt-2 md:mt-3 text-sm md:text-base text-gray-600">
+              {heroSubhead}
             </p>
 
-            {/* Trust indicators — distinct icon per badge, label text stays env-driven */}
+            {/* Trust indicators — green check + value + label (matches iBuyKC) */}
             <div className="mt-3 md:mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 md:gap-5">
-              {badges.map(({ Icon, label }) => (
-                <div key={label} className="flex items-center gap-1.5">
-                  <div
-                    className="flex h-6 w-6 items-center justify-center rounded-full"
-                    style={{ backgroundColor: "rgba(255,255,255,0.15)" }}
-                  >
-                    <Icon className="h-3.5 w-3.5" style={{ color: "white" }} />
+              {stats.map((stat) => (
+                <div key={stat.label} className="flex items-center gap-1.5">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-500/10">
+                    <svg className="h-3.5 w-3.5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
                   </div>
-                  <span className="text-sm md:text-base font-medium text-white/80">
-                    {label}
+                  <span className="text-xs md:text-sm font-medium text-gray-700">
+                    <strong>{stat.value}</strong> {stat.label}
                   </span>
                 </div>
               ))}
