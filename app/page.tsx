@@ -1,6 +1,7 @@
 import Image from "next/image"
 import { SurveyCard } from "@/components/survey/survey-card"
 import { VSLSection } from "@/components/survey/vsl-section"
+import { HeroVSL } from "@/components/survey/hero-vsl"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import config from "@/lib/config"
@@ -59,6 +60,11 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Hero VSL — large, right above the form */}
+          <div className="mt-4 md:mt-6 mx-auto max-w-3xl">
+            <HeroVSL accent={config.accentColor} />
           </div>
 
           {/* Survey Form */}

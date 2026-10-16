@@ -4,6 +4,8 @@ import { CheckCircle2, Phone, MessageSquare } from "lucide-react"
 import config from "@/lib/config"
 import { ClickToPlayVideo } from "@/components/thankyou/click-to-play-video"
 import { VideoTestimonials } from "@/components/thankyou/video-testimonials"
+import { VideoLibrary } from "@/components/thankyou/video-library"
+import { THANKYOU_TOP_VIDEO, ACTIVE_LIBRARY } from "@/lib/videos"
 import { ContactCTA } from "@/components/article/contact-cta"
 import { ARTICLES } from "@/lib/articles"
 
@@ -12,7 +14,8 @@ const RECOMMENDED_READS = ARTICLES.slice(0, 4)
 // Per-client env vars (read on the server). All optional. When unset, the
 // page falls back to the original simpler layout so non-ABQ clients are
 // unaffected.
-const TOP_VIDEO_URL = process.env.NEXT_PUBLIC_THANKYOU_TOP_VIDEO_URL || ""
+const TOP_VIDEO_URL = process.env.NEXT_PUBLIC_THANKYOU_TOP_VIDEO_URL || THANKYOU_TOP_VIDEO.url
+const TOP_VIDEO_TITLE = process.env.NEXT_PUBLIC_THANKYOU_TOP_VIDEO_TITLE || THANKYOU_TOP_VIDEO.title
 const VIDEO_2_URL = process.env.NEXT_PUBLIC_THANKYOU_VIDEO_2_URL || ""
 const VIDEO_2_TITLE = process.env.NEXT_PUBLIC_THANKYOU_VIDEO_2_TITLE || ""
 const VIDEO_2_SUBTITLE = process.env.NEXT_PUBLIC_THANKYOU_VIDEO_2_SUBTITLE || ""
@@ -86,7 +89,7 @@ function ThankYouV2() {
         <div className="mx-auto max-w-4xl px-4">
           <div className="mb-4 text-center">
             <h2 className="text-xl md:text-2xl font-bold text-gray-900">
-              {process.env.NEXT_PUBLIC_THANKYOU_TOP_VIDEO_TITLE || "Thank You for Filling Out the Form"}
+              {TOP_VIDEO_TITLE || "Thank You for Filling Out the Form"}
             </h2>
           </div>
           <div className="rounded-2xl overflow-hidden shadow-lg border border-gray-200 bg-black">
@@ -102,6 +105,22 @@ function ThankYouV2() {
           </div>
         </div>
       </section>
+
+      {ACTIVE_LIBRARY.length > 0 && (
+        <section className="bg-white pb-14 md:pb-20">
+          <div className="mx-auto max-w-4xl px-4">
+            <div className="mb-6 text-center">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900">
+                Have More Questions? Browse Our Video Library
+              </h2>
+              <p className="mt-2 text-gray-600">
+                Pick any topic below and get your questions answered before our team&apos;s call.
+              </p>
+            </div>
+            <VideoLibrary accent={config.accentColor} />
+          </div>
+        </section>
+      )}
 
       {callinDisplay && (
         <section className="bg-[#FAFAF9]">
