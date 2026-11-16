@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { Input } from "@/components/ui/input"
 import { MapPin } from "lucide-react"
+import { zipCountyGate, extractZip, passesZipCountyGate } from "@/lib/zip-county-gate"
 
 export interface AddressDetails {
   formattedAddress: string
@@ -143,6 +144,7 @@ export function AddressAutocomplete({
       let state = ""
       let city = ""
       let county = ""
+      let postalCode = ""
       let lat: number | undefined
       let lng: number | undefined
 
@@ -150,6 +152,7 @@ export function AddressAutocomplete({
         if (component.types.includes("administrative_area_level_1")) state = component.short_name
         if (component.types.includes("locality")) city = component.long_name
         if (component.types.includes("administrative_area_level_2")) county = component.long_name
+        if (component.types.includes("postal_code")) postalCode = component.short_name
       })
 
       if (place.geometry?.location) {
@@ -168,6 +171,14 @@ export function AddressAutocomplete({
           onOutOfArea?.(place.formatted_address)
           return
         }
+      }
+
+      // ZIP / county gate (NEXT_PUBLIC_ALLOWED_ZIPS / _ALLOWED_COUNTIES / _EXCLUDED_ZIPS).
+      const zip = extractZip(postalCode, place.formatted_address)
+      if (!passesZipCountyGate(zipCountyGate, zip, state, county)) {
+        onChange(place.formatted_address)
+        onOutOfArea?.(place.formatted_address)
+        return
       }
       onChange(place.formatted_address)
       onSelect(place.formatted_address, details)

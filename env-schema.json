@@ -192,5 +192,29 @@
     "scope": "public",
     "default": "[]",
     "description": "Client-side copy of SERVICE_AREAS for address autocomplete location bias and validation. JSON array of circles: [{centerLat, centerLng, radiusMiles}]."
+  },
+  {
+    "name": "NEXT_PUBLIC_ALLOWED_ZIPS",
+    "type": "string",
+    "required": false,
+    "scope": "public",
+    "default": "",
+    "description": "Comma-separated 5-digit ZIPs allowed by the address gate. Passes if ZIP OR county is allowed. Empty with empty ALLOWED_COUNTIES = gate off. Build-time."
+  },
+  {
+    "name": "NEXT_PUBLIC_ALLOWED_COUNTIES",
+    "type": "string",
+    "required": false,
+    "scope": "public",
+    "default": "",
+    "description": "Comma-separated \"ST:County Name\" (Google administrative_area_level_2), e.g. WI:Milwaukee County. Build-time."
+  },
+  {
+    "name": "NEXT_PUBLIC_EXCLUDED_ZIPS",
+    "type": "string",
+    "required": false,
+    "scope": "public",
+    "default": "",
+    "description": "Comma-separated 5-digit ZIPs always rejected, even inside an allowed county. Build-time."
   }
 ]
